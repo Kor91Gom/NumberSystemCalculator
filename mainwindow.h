@@ -2,8 +2,13 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QLabel>
 #include <QPushButton>
+#include <QLineEdit>
 #include <QList>
+#include <QMap>
+#include <QEvent>
+#include <QRegularExpression>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -14,19 +19,35 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
+
 private slots:
-    void onPbButtonClicked();
+    void onConversionButtonClicked();
+    void onInputValueChanged(const QString &text);
+    void onDirectInputChanged(const QString &text);
 
 private:
     Ui::MainWindow *ui;
-    QList<lbBin*> pbButtons;
 
-    void initializePbButtons();
-    void setPbButtonSizePolicy();
-    void connectPbButtons();
+    QList<QLabel*> labelList;
+    QList<QPushButton*> buttonList;
+    QList<QLineEdit*> lineEditList;
+
+    QMap<QString, QLabel*> labelMap;
+    QMap<QString, QLineEdit*> lineEditMap;
+
+    QString activeSuffix; // 현재 선택된 진수: Bin, Oct, Deci, Hexa
+
+    void initializeGroupBoxWidgets();
+    void setGroupBoxWidgetSizePolicy();
+    void connectConversionButtons();
+    void connectLineEditInputs();
+    void resetLabelStyles();
+    void updateConversions(const QString &base, const QString &value);
+    bool isValidInput(const QString &base, const QString &value);
 };
-
 #endif // MAINWINDOW_H
