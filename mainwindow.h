@@ -28,7 +28,6 @@ protected:
 private slots:
     void onConversionButtonClicked();
     void onInputValueChanged(const QString &text);
-    void onDirectInputChanged(const QString &text);
 
 private:
     Ui::MainWindow *ui;
@@ -45,7 +44,6 @@ private:
     void initializeGroupBoxWidgets();
     void setGroupBoxWidgetSizePolicy();
     void connectConversionButtons();
-    void connectLineEditInputs();
     void resetLabelStyles();
     void updateConversions(const QString &base, const QString &value);
     bool isValidInput(const QString &base, const QString &value);

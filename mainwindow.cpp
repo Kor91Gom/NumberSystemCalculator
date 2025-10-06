@@ -68,9 +68,7 @@ void MainWindow::connectConversionButtons()
 void MainWindow::resetLabelStyles()
 {
     for (QLabel* label : labelList) label->setStyleSheet("");
-    for (QLineEdit* edit : lineEditMap.values()) {
-        edit->setEnabled(false);
-    }
+    for (QLineEdit* edit : lineEditMap.values()) edit->setEnabled(false);
 }
 
 void MainWindow::onConversionButtonClicked()
@@ -103,20 +101,6 @@ void MainWindow::onInputValueChanged(const QString &text)
     if (activeSuffix.isEmpty()) return;
     if (!isValidInput(activeSuffix, text)) return;
 
-    if (lineEditMap.contains(activeSuffix)) {
-        lineEditMap[activeSuffix]->setText(text);
-    }
-
-    updateConversions(activeSuffix, text);
-}
-
-void MainWindow::onDirectInputChanged(const QString &text)
-{
-    // 예시: 입력값을 기준으로 변환 수행
-    if (activeSuffix.isEmpty()) return;
-    if (!isValidInput(activeSuffix, text)) return;
-
-    ui->leInputValue->setText(text);
     updateConversions(activeSuffix, text);
 }
 
@@ -126,7 +110,7 @@ bool MainWindow::isValidInput(const QString &base, const QString &value)
     if (base == "Bin") regex.setPattern("^[01]+$");
     else if (base == "Oct") regex.setPattern("^[0-7]+$");
     else if (base == "Deci") regex.setPattern("^[0-9]+$");
-    else if (base == "Hexa") regex.setPattern("^[0-9A-F]+$");
+    else if (base == "Hexa") regex.setPattern("^[0-9A-Fa-f]+$");
     else return false;
 
     return regex.match(value).hasMatch();
