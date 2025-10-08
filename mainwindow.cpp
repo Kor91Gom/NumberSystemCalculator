@@ -10,13 +10,13 @@ MainWindow::MainWindow(QWidget *parent)
     initializeGroupBoxWidgets();
     setGroupBoxWidgetSizePolicy();
     connectConversionButtons();
-    connectLineEditInputs(); // ✅ 진수 입력창 실시간 연결
+    connectLineEditInputs();
 
     connect(ui->leInputValue, &QLineEdit::textChanged, this, &MainWindow::onInputValueChanged);
 
     // 초기 DEC 모드 설정
     activeSuffix = "Deci";
-    resetLabelStyles();    // 모든 입력창 비활성화
+    resetLabelStyles();
     ui->leDeci->setEnabled(true);
     labelMap["Deci"]->setStyleSheet("background-color: black; color: white;");
 
@@ -49,7 +49,7 @@ void MainWindow::initializeGroupBoxWidgets()
         if (name.startsWith("le") && name != "leInputValue") {
             QString key = name.mid(2);
             lineEditMap[key] = edit;
-            edit->installEventFilter(this); // 클릭 이벤트 필터 등록
+            edit->installEventFilter(this);
         }
     }
 }
@@ -78,8 +78,6 @@ void MainWindow::connectLineEditInputs()
 
         connect(edit, &QLineEdit::textChanged, this, [=](const QString &text){
             if (!isValidInput(suffix, text)) return;
-
-            // 기준 진수 변경 제거
             if (suffix != activeSuffix) return;
 
             ui->leInputValue->setText(text);
@@ -99,10 +97,10 @@ void MainWindow::onConversionButtonClicked()
     QPushButton* senderBtn = qobject_cast<QPushButton*>(sender());
     if (!senderBtn) return;
 
-    QString suffix = senderBtn->objectName().mid(3); // "Bin", "Oct", etc.
+    QString suffix = senderBtn->objectName().mid(3);
     activeSuffix = suffix;
 
-    resetLabelStyles(); // 모든 입력창 잠금
+    resetLabelStyles();
 
     if (labelMap.contains(suffix)) {
         labelMap[suffix]->setStyleSheet("background-color: black; color: white;");
@@ -134,7 +132,7 @@ bool MainWindow::isValidInput(const QString &base, const QString &value)
     if (base == "Bin") regex.setPattern("^[01]+$");
     else if (base == "Oct") regex.setPattern("^[0-7]+$");
     else if (base == "Deci") regex.setPattern("^[0-9]+$");
-    else if (base == "Hexa") regex.setPattern("^[0-9A-Fa-f]+$");
+    else if (base == "Hexa") regex.setPattern("^[0-9A-F]+$");
     else return false;
 
     return regex.match(value).hasMatch();
@@ -195,7 +193,7 @@ void MainWindow::PropertySetting(const QString &tabObjectName, const QString &ic
     for (int i = 0; i < ui->tabWidget->count(); ++i) {
         QWidget* tab = ui->tabWidget->widget(i);
         if (tab && tab->objectName() == tabObjectName) {
-            QIcon icon(iconPath); // 경로 그대로 사용
+            QIcon icon(iconPath);
             ui->tabWidget->setTabIcon(i, icon);
             break;
         }

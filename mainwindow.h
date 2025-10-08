@@ -9,6 +9,7 @@
 #include <QMap>
 #include <QEvent>
 #include <QRegularExpression>
+#include <QIcon>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -39,15 +40,16 @@ private:
     QMap<QString, QLabel*> labelMap;
     QMap<QString, QLineEdit*> lineEditMap;
 
-    QString activeSuffix; // 현재 선택된 진수: Bin, Oct, Deci, Hexa
+    QString activeSuffix;
 
     void initializeGroupBoxWidgets();
     void setGroupBoxWidgetSizePolicy();
     void connectConversionButtons();
-    void connectLineEditInputs(); // ✅ 추가
+    void connectLineEditInputs();
     void resetLabelStyles();
     void updateConversions(const QString &base, const QString &value);
     bool isValidInput(const QString &base, const QString &value);
-    void PropertySetting(const QString &tabObjectName, const QString &iconPath); // ✅ 아이콘 설정 함수
+    void PropertySetting(const QString &tabObjectName, const QString &iconPath);
 };
+
 #endif // MAINWINDOW_H
