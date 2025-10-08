@@ -10,13 +10,19 @@ MainWindow::MainWindow(QWidget *parent)
     initializeGroupBoxWidgets();
     setGroupBoxWidgetSizePolicy();
     connectConversionButtons();
+    connectLineEditInputs(); // ✅ 진수 입력창 실시간 연결
 
     connect(ui->leInputValue, &QLineEdit::textChanged, this, &MainWindow::onInputValueChanged);
 
     // 초기 DEC 모드 설정
     activeSuffix = "Deci";
+    resetLabelStyles();    // 모든 입력창 비활성화
     ui->leDeci->setEnabled(true);
     labelMap["Deci"]->setStyleSheet("background-color: black; color: white;");
+
+    // 탭 아이콘 설정
+    PropertySetting("tabFullKeypad", "C:/dev/Git/NumberSystemCalculator/keypad.png");
+    PropertySetting("tabBitwiseTransformationKeypad", "C:/dev/Git/NumberSystemCalculator/btkeypad.png");
 }
 
 MainWindow::~MainWindow()
@@ -51,7 +57,6 @@ void MainWindow::initializeGroupBoxWidgets()
 void MainWindow::setGroupBoxWidgetSizePolicy()
 {
     QSizePolicy policy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
     for (QLabel* label : labelList) label->setSizePolicy(policy);
     for (QPushButton* button : buttonList) button->setSizePolicy(policy);
     for (QLineEdit* edit : lineEditList) edit->setSizePolicy(policy);
@@ -63,6 +68,24 @@ void MainWindow::connectConversionButtons()
     connect(ui->pbnOct, &QPushButton::clicked, this, &MainWindow::onConversionButtonClicked);
     connect(ui->pbnDeci, &QPushButton::clicked, this, &MainWindow::onConversionButtonClicked);
     connect(ui->pbnHexa, &QPushButton::clicked, this, &MainWindow::onConversionButtonClicked);
+}
+
+void MainWindow::connectLineEditInputs()
+{
+    for (auto it = lineEditMap.begin(); it != lineEditMap.end(); ++it) {
+        QLineEdit* edit = it.value();
+        QString suffix = it.key();
+
+        connect(edit, &QLineEdit::textChanged, this, [=](const QString &text){
+            if (!isValidInput(suffix, text)) return;
+
+            // 기준 진수 변경 제거
+            if (suffix != activeSuffix) return;
+
+            ui->leInputValue->setText(text);
+            updateConversions(suffix, text);
+        });
+    }
 }
 
 void MainWindow::resetLabelStyles()
@@ -79,7 +102,7 @@ void MainWindow::onConversionButtonClicked()
     QString suffix = senderBtn->objectName().mid(3); // "Bin", "Oct", etc.
     activeSuffix = suffix;
 
-    resetLabelStyles();
+    resetLabelStyles(); // 모든 입력창 잠금
 
     if (labelMap.contains(suffix)) {
         labelMap[suffix]->setStyleSheet("background-color: black; color: white;");
@@ -100,6 +123,7 @@ void MainWindow::onInputValueChanged(const QString &text)
 {
     if (activeSuffix.isEmpty()) return;
     if (!isValidInput(activeSuffix, text)) return;
+    if (!lineEditMap.contains(activeSuffix)) return;
 
     updateConversions(activeSuffix, text);
 }
@@ -119,19 +143,20 @@ bool MainWindow::isValidInput(const QString &base, const QString &value)
 void MainWindow::updateConversions(const QString &base, const QString &value)
 {
     bool ok = false;
-    int number = 0;
+    quint64 number = 0;
 
-    if (base == "Bin") number = value.toInt(&ok, 2);
-    else if (base == "Oct") number = value.toInt(&ok, 8);
-    else if (base == "Deci") number = value.toInt(&ok, 10);
-    else if (base == "Hexa") number = value.toInt(&ok, 16);
+    if (base == "Bin") number = value.toULongLong(&ok, 2);
+    else if (base == "Oct") number = value.toULongLong(&ok, 8);
+    else if (base == "Deci") number = value.toULongLong(&ok, 10);
+    else if (base == "Hexa") number = value.toULongLong(&ok, 16);
+    else return;
 
     if (!ok) return;
 
-    lineEditMap["Bin"]->setText(QString::number(number, 2));
-    lineEditMap["Oct"]->setText(QString::number(number, 8));
-    lineEditMap["Deci"]->setText(QString::number(number, 10));
-    lineEditMap["Hexa"]->setText(QString::number(number, 16).toUpper());
+    if (lineEditMap.contains("Bin")) lineEditMap["Bin"]->setText(QString::number(number, 2));
+    if (lineEditMap.contains("Oct")) lineEditMap["Oct"]->setText(QString::number(number, 8));
+    if (lineEditMap.contains("Deci")) lineEditMap["Deci"]->setText(QString::number(number, 10));
+    if (lineEditMap.contains("Hexa")) lineEditMap["Hexa"]->setText(QString::number(number, 16).toUpper());
 }
 
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)
@@ -153,9 +178,26 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
                     labelMap[suffix]->setStyleSheet("background-color: black; color: white;");
                 }
 
+                if (lineEditMap.contains(suffix)) {
+                    lineEditMap[suffix]->setEnabled(true);
+                    lineEditMap[suffix]->setFocus();
+                }
+
                 return true;
             }
         }
     }
     return QMainWindow::eventFilter(watched, event);
+}
+
+void MainWindow::PropertySetting(const QString &tabObjectName, const QString &iconPath)
+{
+    for (int i = 0; i < ui->tabWidget->count(); ++i) {
+        QWidget* tab = ui->tabWidget->widget(i);
+        if (tab && tab->objectName() == tabObjectName) {
+            QIcon icon(iconPath); // 경로 그대로 사용
+            ui->tabWidget->setTabIcon(i, icon);
+            break;
+        }
+    }
 }

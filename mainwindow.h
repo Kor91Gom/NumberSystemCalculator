@@ -44,8 +44,10 @@ private:
     void initializeGroupBoxWidgets();
     void setGroupBoxWidgetSizePolicy();
     void connectConversionButtons();
+    void connectLineEditInputs(); // ✅ 추가
     void resetLabelStyles();
     void updateConversions(const QString &base, const QString &value);
     bool isValidInput(const QString &base, const QString &value);
+    void PropertySetting(const QString &tabObjectName, const QString &iconPath); // ✅ 아이콘 설정 함수
 };
 #endif // MAINWINDOW_H
